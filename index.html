@@ -38,7 +38,7 @@
   <header class="border-b border-[#ff0055]/30 px-4 py-3 bg-[#050505]/90 backdrop-blur sticky top-0 z-30 flex items-center justify-between">
     <div class="flex items-center space-x-2">
       <span class="text-xs font-bold tracking-widest text-[#ff0055] font-cyber">DOPA.SYS_OVERRIDE</span>
-      <span class="text-[10px] text-zinc-900 bg-[#ff0055] px-1.5 py-0.5 rounded-sm font-cyber font-bold animate-pulse">DUAL PAIR</span>
+      <span class="text-[10px] text-zinc-900 bg-[#ff0055] px-1.5 py-0.5 rounded-sm font-cyber font-bold animate-pulse">PRO</span>
     </div>
     <span class="text-xs text-zinc-500 font-cyber">16:9 // 1920×1080</span>
   </header>
@@ -99,9 +99,28 @@
 
       <div class="p-4 space-y-4">
         
-        <!-- [탭 1] 듀얼 미디어 (왼쪽/오른쪽 페어 사진 등록) -->
+        <!-- [탭 1] 듀얼 미디어 및 분할선 스타일 -->
         <div id="tab1" class="tab-content space-y-4">
           
+          <!-- ★ 신규: 화면 분할 스타일 컨트롤 패널 -->
+          <div class="bg-zinc-950 p-3 rounded-lg border border-zinc-800 space-y-2">
+            <span class="text-[9px] font-bold text-zinc-400 font-cyber">> SPLIT_STYLE_CONFIG</span>
+            <div class="grid grid-cols-3 gap-2">
+              <button id="btnToggleLine" class="py-1.5 bg-[#ff0055]/20 text-[#ff0055] border border-[#ff0055]/40 rounded-md text-[10px] font-bold transition">
+                선 표시 ON
+              </button>
+              <button id="btnToggleAngle" class="py-1.5 bg-zinc-900 text-zinc-300 border border-zinc-700 rounded-md text-[10px] font-bold transition">
+                📐 기울기: 0°
+              </button>
+              <button id="btnToggleGradient" class="py-1.5 bg-zinc-900 text-zinc-300 border border-zinc-700 rounded-md text-[10px] font-bold transition">
+                🌫️ 그라데이션 OFF
+              </button>
+            </div>
+            <p class="text-[9px] text-zinc-500 font-cyber leading-relaxed mt-1">
+              ※ 그라데이션 ON 시, 경계가 안개처럼 자연스럽게 섞입니다. (선 표시는 자동으로 꺼집니다.)
+            </p>
+          </div>
+
           <!-- 왼쪽 인물 -->
           <div class="bg-[#050505] p-3 border border-zinc-800 space-y-2">
             <div class="flex justify-between items-center mb-1">
@@ -228,16 +247,17 @@
     let animProgress = 0;
     let previewTimer = null;
     let isExporting = false;
-    let themeColor = '#ff0055'; 
+    let themeColor = '#ff0055';
+
+    // 분할선 스타일 전역 상태
+    let showSplitLine = true;
+    let splitAngle = 0; // 0 (수직), 20 (우상향 사선), -20 (우하향 사선)
+    let isGradientEdge = false;
 
     // 도파 오리지널 네온 악마 로고
     const dopaDevilSvg = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><polygon points="26,34 14,8 38,24" fill="%23ff0055"/><polygon points="74,34 86,8 62,24" fill="%23ff0055"/><circle cx="52" cy="56" r="38" fill="%23cc00ff"/><circle cx="49" cy="53" r="37" fill="%23ff0055"/><line x1="33" y1="46" x2="44" y2="57" stroke="%23111827" stroke-width="4.5" stroke-linecap="round"/><line x1="44" y1="46" x2="33" y2="57" stroke="%23111827" stroke-width="4.5" stroke-linecap="round"/><path d="M 56 50 Q 64 42 72 51" fill="none" stroke="%23111827" stroke-width="4.5" stroke-linecap="round"/><path d="M 37 66 Q 52 80 67 65" fill="none" stroke="%23111827" stroke-width="4.5" stroke-linecap="round"/><polygon points="61,70 65,77 67,70" fill="%23111827"/><polygon points="85,18 87,14 91,16 88,19 90,23 86,21 83,24 84,20 80,18 84,17" fill="%23ffffff"/></svg>`;
     const dopaLogoImg = new Image();
     dopaLogoImg.src = dopaDevilSvg;
-
-    function drawRect(c, x, y, w, h) {
-      c.beginPath(); c.rect(x, y, w, h); c.closePath();
-    }
 
     function getWrappedLines(context, text, maxWidth) {
       if (!text) return [''];
@@ -257,20 +277,19 @@
       return lines.length > 0 ? lines : [''];
     }
 
-    // 듀얼 레이아웃 초기 위치 (스플릿 구도)
+    // 오브젝트 초기 위치
     const defaultElements = {
-      profile1:   { id: 'profile1',   x: 40,  y: 60,  w: 220, h: 90 }, // 좌측 상단
-      profile2:   { id: 'profile2',   x: 700, y: 60,  w: 220, h: 90 }, // 우측 상단
-      logConsole: { id: 'logConsole', x: 280, y: 300, w: 400, h: 200 }, // 중앙 하단
-      warningBox: { id: 'warningBox', x: 330, y: 30,  w: 300, h: 60 }, // 중앙 상단 에러창
-      barcode:    { id: 'barcode',    x: 40,  y: 450, w: 180, h: 70 }  // 좌측 하단
+      profile1:   { id: 'profile1',   x: 40,  y: 60,  w: 220, h: 90 },
+      profile2:   { id: 'profile2',   x: 700, y: 60,  w: 220, h: 90 },
+      logConsole: { id: 'logConsole', x: 280, y: 300, w: 400, h: 200 },
+      warningBox: { id: 'warningBox', x: 330, y: 30,  w: 300, h: 60 },
+      barcode:    { id: 'barcode',    x: 40,  y: 450, w: 180, h: 70 }
     };
     let elements = JSON.parse(JSON.stringify(defaultElements));
     let renderOrder = ['barcode', 'profile1', 'profile2', 'warningBox', 'logConsole'];
     let draggingItem = null;
     let dragOffset = { x: 0, y: 0 };
 
-    // 시스템 터미널 로그 (4가지 타입: SYS / L_USR / R_USR / ERR)
     let logEntries = [
       { type: 'sys',   text: '', placeholder: 'SYSTEM: 두 개체의 접촉이 감지되었습니다.' },
       { type: 'left',  text: '', placeholder: 'SUB_01: 접근을 시도합니다.' },
@@ -278,7 +297,59 @@
       { type: 'err',   text: '', placeholder: 'ERROR: 위험도가 임계점을 돌파했습니다!' }
     ];
 
-    // DOM
+    // 분할 스타일 제어 이벤트
+    const btnToggleLine = document.getElementById('btnToggleLine');
+    const btnToggleAngle = document.getElementById('btnToggleAngle');
+    const btnToggleGradient = document.getElementById('btnToggleGradient');
+
+    btnToggleLine.addEventListener('click', () => {
+      showSplitLine = !showSplitLine;
+      if (showSplitLine) {
+        btnToggleLine.textContent = '선 표시 ON';
+        btnToggleLine.className = 'py-1.5 bg-[#ff0055]/20 text-[#ff0055] border border-[#ff0055]/40 rounded-md text-[10px] font-bold transition';
+      } else {
+        btnToggleLine.textContent = '선 표시 OFF';
+        btnToggleLine.className = 'py-1.5 bg-zinc-900 text-zinc-400 border border-zinc-700 rounded-md text-[10px] font-bold transition';
+      }
+      draw();
+    });
+
+    btnToggleAngle.addEventListener('click', () => {
+      if (splitAngle === 0) {
+        splitAngle = 20; // 우상향
+        btnToggleAngle.textContent = '📐 기울기: 20° (/)';
+        btnToggleAngle.className = 'py-1.5 bg-[#00ffcc]/20 text-[#00ffcc] border border-[#00ffcc]/40 rounded-md text-[10px] font-bold transition';
+      } else if (splitAngle === 20) {
+        splitAngle = -20; // 우하향
+        btnToggleAngle.textContent = '📐 기울기: -20° (\\)';
+        btnToggleAngle.className = 'py-1.5 bg-[#cc00ff]/20 text-[#cc00ff] border border-[#cc00ff]/40 rounded-md text-[10px] font-bold transition';
+      } else {
+        splitAngle = 0; // 수직
+        btnToggleAngle.textContent = '📐 기울기: 0° (|)';
+        btnToggleAngle.className = 'py-1.5 bg-zinc-900 text-zinc-300 border border-zinc-700 rounded-md text-[10px] font-bold transition';
+      }
+      draw();
+    });
+
+    btnToggleGradient.addEventListener('click', () => {
+      isGradientEdge = !isGradientEdge;
+      if (isGradientEdge) {
+        btnToggleGradient.textContent = '🌫️ 그라데이션 ON';
+        btnToggleGradient.className = 'py-1.5 bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 rounded-md text-[10px] font-bold transition';
+        // 그라데이션 켤 때는 선 표시 강제 OFF
+        showSplitLine = false;
+        btnToggleLine.textContent = '선 표시 OFF (자동)';
+        btnToggleLine.className = 'py-1.5 bg-zinc-900 text-zinc-600 border border-zinc-800 rounded-md text-[10px] font-bold transition cursor-not-allowed';
+      } else {
+        btnToggleGradient.textContent = '🌫️ 그라데이션 OFF';
+        btnToggleGradient.className = 'py-1.5 bg-zinc-900 text-zinc-300 border border-zinc-700 rounded-md text-[10px] font-bold transition';
+        btnToggleLine.className = 'py-1.5 bg-zinc-900 text-zinc-400 border border-zinc-700 rounded-md text-[10px] font-bold transition';
+        btnToggleLine.textContent = '선 표시 OFF';
+      }
+      draw();
+    });
+
+    // DOM 참조
     const bgInput1Gallery = document.getElementById('bgInput1Gallery');
     const bgInput1Files = document.getElementById('bgInput1Files');
     const bgStatus1 = document.getElementById('bgStatus1');
@@ -442,11 +513,8 @@
 
     async function onMediaSelected(inputEl, isLeft) {
       if (inputEl.files && inputEl.files[0]) {
-        if (isLeft) {
-          bgMedia1 = await loadMediaFile(inputEl.files[0], bgStatus1);
-        } else {
-          bgMedia2 = await loadMediaFile(inputEl.files[0], bgStatus2);
-        }
+        if (isLeft) bgMedia1 = await loadMediaFile(inputEl.files[0], bgStatus1);
+        else bgMedia2 = await loadMediaFile(inputEl.files[0], bgStatus2);
         draw();
       }
     }
@@ -503,13 +571,118 @@
     canvas.addEventListener('touchstart', handleDragStart, { passive: false }); window.addEventListener('touchmove', handleDragMove, { passive: false }); window.addEventListener('touchend', handleDragEnd);
 
     // ================= 메인 렌더링 =================
-    // 화면 크기에 맞게 미디어를 크롭(Cover)하여 그리는 함수
     function drawMediaCover(c, media, srcImg, x, y, w, h) {
       if (!srcImg || !media) return;
       const scale = Math.max(w / media.width, h / media.height);
       const sw = media.width * scale;
       const sh = media.height * scale;
       c.drawImage(srcImg, x + (w - sw) / 2, y + (h - sh) / 2, sw, sh);
+    }
+
+    // [신규] 그라데이션 및 사선 분할 처리 엔진
+    function drawSplitBackground(prog) {
+      const w = canvas.width;
+      const h = canvas.height;
+      const cx = w / 2;
+      const cy = h / 2;
+      
+      const rad = splitAngle * Math.PI / 180;
+      const tan = Math.tan(rad);
+      const dx = (h / 2) * tan; // 위아래로 틀어지는 가로 간격
+
+      // [1] 그라데이션 블렌딩 모드 (안개처럼 섞임)
+      if (isGradientEdge) {
+        // 왼쪽 베이스 렌더링
+        const src1 = getDrawableSource(bgMedia1, prog);
+        if (src1) drawMediaCover(ctx, bgMedia1, src1, 0, 0, w, h);
+        else {
+          ctx.fillStyle = 'rgba(16, 185, 129, 0.08)'; ctx.fillRect(0, 0, w, h);
+          ctx.fillStyle = '#10b981'; ctx.font = '12px "Share Tech Mono"'; ctx.textAlign = 'center';
+          ctx.fillText('WAITING FOR SUBJECT_01...', 240, 270);
+        }
+
+        // 오프스크린 캔버스로 오른쪽 마스크 렌더링
+        const offCanvas = document.createElement('canvas');
+        offCanvas.width = w; offCanvas.height = h;
+        const offCtx = offCanvas.getContext('2d');
+
+        const src2 = getDrawableSource(bgMedia2, prog);
+        if (src2) drawMediaCover(offCtx, bgMedia2, src2, 0, 0, w, h);
+        else {
+          offCtx.fillStyle = `rgba(${parseInt(themeColor.slice(1,3),16)}, ${parseInt(themeColor.slice(3,5),16)}, ${parseInt(themeColor.slice(5,7),16)}, 0.08)`;
+          offCtx.fillRect(0, 0, w, h);
+          offCtx.fillStyle = themeColor; offCtx.font = '12px "Share Tech Mono"'; offCtx.textAlign = 'center';
+          offCtx.fillText('WAITING FOR SUBJECT_02...', 720, 270);
+        }
+
+        // 사선 각도에 맞춘 리니어 그라데이션 마스크 계산
+        const blurWidth = 300; // 섞이는 구간의 넓이
+        const gx1 = cx - Math.cos(rad) * blurWidth / 2;
+        const gy1 = cy + Math.sin(rad) * blurWidth / 2;
+        const gx2 = cx + Math.cos(rad) * blurWidth / 2;
+        const gy2 = cy - Math.sin(rad) * blurWidth / 2;
+        
+        const grad = offCtx.createLinearGradient(gx1, gy1, gx2, gy2);
+        grad.addColorStop(0, 'rgba(0,0,0,0)');
+        grad.addColorStop(1, 'rgba(0,0,0,1)');
+
+        offCtx.globalCompositeOperation = 'destination-in';
+        offCtx.fillStyle = grad;
+        offCtx.fillRect(0, 0, w, h);
+        
+        // 메인 캔버스에 합성
+        ctx.drawImage(offCanvas, 0, 0);
+      } 
+      // [2] 하드 컷 스플릿 모드 (사선 or 수직)
+      else {
+        // 왼쪽 (SUBJECT 01)
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(0, 0); ctx.lineTo(cx + dx, 0); ctx.lineTo(cx - dx, h); ctx.lineTo(0, h); ctx.closePath();
+        ctx.clip();
+        
+        const src1 = getDrawableSource(bgMedia1, prog);
+        if (src1) drawMediaCover(ctx, bgMedia1, src1, 0, 0, w, h);
+        else {
+          ctx.fillStyle = 'rgba(16, 185, 129, 0.08)'; ctx.fillRect(0, 0, w, h);
+          ctx.fillStyle = '#10b981'; ctx.font = '12px "Share Tech Mono"'; ctx.textAlign = 'center';
+          ctx.fillText('WAITING FOR SUBJECT_01...', cx - dx/2 - 120, 270);
+        }
+        ctx.restore();
+
+        // 오른쪽 (SUBJECT 02)
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(cx + dx, 0); ctx.lineTo(w, 0); ctx.lineTo(w, h); ctx.lineTo(cx - dx, h); ctx.closePath();
+        ctx.clip();
+        
+        const src2 = getDrawableSource(bgMedia2, prog);
+        if (src2) drawMediaCover(ctx, bgMedia2, src2, 0, 0, w, h);
+        else {
+          ctx.fillStyle = `rgba(${parseInt(themeColor.slice(1,3),16)}, ${parseInt(themeColor.slice(3,5),16)}, ${parseInt(themeColor.slice(5,7),16)}, 0.08)`; 
+          ctx.fillRect(0, 0, w, h);
+          ctx.fillStyle = themeColor; ctx.font = '12px "Share Tech Mono"'; ctx.textAlign = 'center';
+          ctx.fillText('WAITING FOR SUBJECT_02...', cx + dx/2 + 120, 270);
+        }
+        ctx.restore();
+
+        // 중앙 분할선 & 싱크 배지 그리기 (옵션이 켜져 있을 때만)
+        if (showSplitLine) {
+          ctx.strokeStyle = themeColor; ctx.lineWidth = 2;
+          ctx.beginPath(); ctx.moveTo(cx + dx, 0); ctx.lineTo(cx - dx, h); ctx.stroke();
+          
+          if (Math.random() > 0.8) {
+            ctx.strokeStyle = 'rgba(255, 0, 85, 0.5)';
+            ctx.beginPath(); ctx.moveTo(cx + dx + 2, 0); ctx.lineTo(cx - dx + 2, h); ctx.stroke();
+          }
+
+          // 배지는 항상 중앙에 고정
+          ctx.fillStyle = '#050505'; ctx.fillRect(430, 255, 100, 30);
+          ctx.strokeStyle = themeColor; ctx.strokeRect(430, 255, 100, 30);
+          ctx.fillStyle = themeColor; ctx.font = 'bold 12px "Share Tech Mono"'; ctx.textAlign = 'center';
+          ctx.fillText('SYNC_RATE', 480, 274);
+        }
+      }
     }
 
     function draw(prog = animProgress) {
@@ -521,49 +694,13 @@
       for (let x = 0; x < canvas.width; x += 40) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke(); }
       for (let y = 0; y < canvas.height; y += 40) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke(); }
 
-      // 2. 듀얼 스플릿 미디어 (반반 분할)
-      const src1 = getDrawableSource(bgMedia1, prog);
-      if (src1) {
-        ctx.save(); ctx.beginPath(); ctx.rect(0, 0, 480, 540); ctx.clip();
-        drawMediaCover(ctx, bgMedia1, src1, 0, 0, 480, 540);
-        ctx.restore();
-      } else {
-        ctx.fillStyle = 'rgba(16, 185, 129, 0.05)'; ctx.fillRect(0, 0, 480, 540);
-        ctx.fillStyle = '#10b981'; ctx.font = '12px "Share Tech Mono"'; ctx.textAlign = 'center';
-        ctx.fillText('WAITING FOR SUBJECT_01...', 240, 270);
-      }
+      // 2. 배경 스플릿 및 그라데이션 합성
+      drawSplitBackground(prog);
 
-      const src2 = getDrawableSource(bgMedia2, prog);
-      if (src2) {
-        ctx.save(); ctx.beginPath(); ctx.rect(480, 0, 480, 540); ctx.clip();
-        drawMediaCover(ctx, bgMedia2, src2, 480, 0, 480, 540);
-        ctx.restore();
-      } else {
-        ctx.fillStyle = `rgba(${parseInt(themeColor.slice(1,3),16)}, ${parseInt(themeColor.slice(3,5),16)}, ${parseInt(themeColor.slice(5,7),16)}, 0.05)`; 
-        ctx.fillRect(480, 0, 480, 540);
-        ctx.fillStyle = themeColor; ctx.font = '12px "Share Tech Mono"'; ctx.textAlign = 'center';
-        ctx.fillText('WAITING FOR SUBJECT_02...', 720, 270);
-      }
+      // 화면 전체 틴트 (글래스 가독성용)
+      ctx.fillStyle = 'rgba(5, 5, 5, 0.35)'; ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // 화면 전체 틴트 (글래스 가독성)
-      ctx.fillStyle = 'rgba(5, 5, 5, 0.4)'; ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      // 3. 중앙 분할선 & 싱크 배지
-      ctx.strokeStyle = themeColor; ctx.lineWidth = 2;
-      ctx.beginPath(); ctx.moveTo(480, 0); ctx.lineTo(480, 540); ctx.stroke();
-      
-      // 글리치 효과 (오른쪽으로 살짝 빗나가는 빨간 선)
-      if (Math.random() > 0.8) {
-        ctx.strokeStyle = 'rgba(255, 0, 85, 0.5)';
-        ctx.beginPath(); ctx.moveTo(482, 0); ctx.lineTo(482, 540); ctx.stroke();
-      }
-
-      ctx.fillStyle = '#050505'; ctx.fillRect(430, 255, 100, 30);
-      ctx.strokeStyle = themeColor; ctx.strokeRect(430, 255, 100, 30);
-      ctx.fillStyle = themeColor; ctx.font = 'bold 12px "Share Tech Mono"'; ctx.textAlign = 'center';
-      ctx.fillText('SYNC_RATE', 480, 274);
-
-      // 4. 컴포넌트 렌더링
+      // 3. 컴포넌트 렌더링
       renderOrder.forEach(key => {
         if (key === 'barcode') renderBarcodeLabel(prog);
         if (key === 'profile1') renderProfile(elements.profile1, name1.value, danger1.value, 'SUBJECT_01', '#10b981');
@@ -628,7 +765,7 @@
       ctx.restore();
     }
 
-    // 워닝 에러 캡슐 (도파 로고 포함)
+    // 워닝 에러 캡슐
     function renderWarningBox(prog) {
       const it = elements.warningBox;
       const text = quoteText.value.trim() || quoteText.placeholder.replace('예: ', '');
@@ -663,7 +800,7 @@
       ctx.fillText('root@dopa-sys:~# tail -f /var/log/mind.log', it.x + 10, it.y + 16);
 
       const total = logEntries.length;
-      const stepDur = 0.75 / total; // 전체 시간의 75% 동안 타이핑
+      const stepDur = 0.75 / total; 
       let currentY = it.y + 42;
 
       logEntries.forEach((log, idx) => {
@@ -679,7 +816,6 @@
           ctx.font = 'bold 11px "Share Tech Mono"'; ctx.fillStyle = typeColor;
           ctx.fillText(label, it.x + 12, currentY);
 
-          // 타이핑 길이 계산
           const localProg = Math.min(1, (prog - entryProgStart) / (stepDur * 0.8));
           const charCount = Math.ceil(localProg * text.length);
           const showText = text.substring(0, charCount);
@@ -705,7 +841,7 @@
       ctx.restore();
     }
 
-    // 7초 루프
+    // 7초 루프 엔진
     draw(0);
     function startPreviewLoop() {
       stopPreviewLoop();
@@ -720,7 +856,7 @@
     }
     startPreviewLoop();
 
-    // ================= 고화질 내보내기 =================
+    // ================= 고화질 내보내기 엔진 =================
     const btnGenerateGIF = document.getElementById('btnGenerateGIF');
     const btnGenerateMP4 = document.getElementById('btnGenerateMP4');
     const loadingStatus = document.getElementById('loadingStatus');
@@ -749,7 +885,7 @@
         loadingStatus.classList.add('hidden');
         if (!obj.error) {
           previewMediaWrapper.innerHTML = `<img src="${obj.image}" class="w-full h-full object-cover">`;
-          btnDownload.href = obj.image; btnDownload.download = `dopa_override_dual.gif`;
+          btnDownload.href = obj.image; btnDownload.download = `dopa_sys_override.gif`;
           resultArea.classList.remove('hidden'); resultArea.scrollIntoView({ behavior: 'smooth' });
         }
       });
@@ -764,10 +900,13 @@
       draw(0.0);
       const stream = canvas.captureStream(30);
       let mimeType = 'video/mp4';
-      if (!MediaRecorder.isTypeSupported('video/mp4')) mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9') ? 'video/webm;codecs=vp9' : 'video/webm';
+      if (!MediaRecorder.isTypeSupported('video/mp4')) {
+        mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9') ? 'video/webm;codecs=vp9' : 'video/webm';
+      }
       
       let recorder;
-      try { recorder = new MediaRecorder(stream, { mimeType }); } catch (e) { recorder = new MediaRecorder(stream); }
+      try { recorder = new MediaRecorder(stream, { mimeType }); } 
+      catch (e) { recorder = new MediaRecorder(stream); }
 
       const chunks = [];
       recorder.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data); };
@@ -775,7 +914,7 @@
         const blob = new Blob(chunks, { type: recorder.mimeType || 'video/mp4' });
         const videoUrl = URL.createObjectURL(blob);
         previewMediaWrapper.innerHTML = `<video src="${videoUrl}" autoplay loop muted playsinline class="w-full h-full object-cover"></video>`;
-        btnDownload.href = videoUrl; btnDownload.download = `dopa_override_dual.mp4`;
+        btnDownload.href = videoUrl; btnDownload.download = `dopa_sys_override.mp4`;
         
         isExporting = false; startPreviewLoop();
         btnGenerateGIF.disabled = false; btnGenerateMP4.disabled = false;
@@ -786,7 +925,8 @@
       recorder.start();
       let currentFrame = 0; const totalSteps = 180;
       const stepInterval = setInterval(() => {
-        draw(currentFrame / totalSteps); currentFrame++;
+        draw(currentFrame / totalSteps);
+        currentFrame++;
         progressBar.style.width = `${Math.min(95, Math.round((currentFrame / totalSteps) * 100))}%`;
         statusMsg.textContent = `> COMPILING_VIDEO (${Math.round(currentFrame / 30)}/6s)...`;
         if (currentFrame >= totalSteps) { clearInterval(stepInterval); recorder.stop(); }
@@ -795,7 +935,7 @@
 
     btnShareX.addEventListener('click', () => {
       const url = window.location.href;
-      const text = encodeURIComponent(`[SYSTEM OVERRIDE] 사이버펑크 듀얼 페어틀 ⚠️\n#도파 #DOPA #페어틀 #사이버펑크 #자캐 #혐관\n`);
+      const text = encodeURIComponent(`[SYSTEM OVERRIDE] 사이버펑크 페어틀 ⚠️\n#도파 #DOPA #페어틀 #사이버펑크 #자캐\n`);
       window.open(`https://twitter.com/intent/tweet?text=${text}&url=${encodeURIComponent(url)}`, '_blank');
     });
   </script>
