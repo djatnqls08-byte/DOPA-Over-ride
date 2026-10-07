@@ -6,14 +6,12 @@
   <title>DOPA System Override 듀얼 페어틀 메이커</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gifshot/0.3.2/gifshot.min.js"></script>
-  <!-- omggif: GIF 무손실 디코더 -->
   <script src="https://cdn.jsdelivr.net/npm/omggif@1.0.10/omggif.js"></script>
   <script>
     if (!window.omggif && !window.GifReader) {
       document.write('<script src="https://unpkg.com/omggif@1.0.10/omggif.js"><\/script>');
     }
   </script>
-  <!-- 사이버펑크 폰트 조합 -->
   <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
   <style>
@@ -30,6 +28,28 @@
         linear-gradient(90deg, transparent 24%, rgba(255, 0, 85, 0.05) 25%, rgba(255, 0, 85, 0.05) 26%, transparent 27%, transparent 74%, rgba(255, 0, 85, 0.05) 75%, rgba(255, 0, 85, 0.05) 76%, transparent 77%, transparent);
       background-size: 30px 30px;
     }
+
+    /* 도파 네온 글리치 로고 애니메이션 */
+    @keyframes glitch-svg {
+      0% { transform: translate(0, 0); filter: drop-shadow(2px 0px 0px #0ff) drop-shadow(-2px 0px 0px #f0f); }
+      10% { transform: translate(-1px, 1px); filter: drop-shadow(-2px 0px 0px #0ff) drop-shadow(2px 0px 0px #f0f); }
+      20% { transform: translate(1px, -1px); filter: drop-shadow(1px 0px 0px #0ff); }
+      30% { transform: translate(0, 0); filter: none; }
+      40% { transform: translate(-1px, -1px); filter: drop-shadow(2px 0px 0px #0ff) drop-shadow(-2px 0px 0px #f0f); }
+      50% { transform: translate(1px, 1px); filter: drop-shadow(-2px 0px 0px #0ff) drop-shadow(2px 0px 0px #f0f); }
+      60% { transform: translate(0, 0); filter: none; }
+      70% { transform: translate(-2px, 0); filter: drop-shadow(2px 0px 0px #0ff) drop-shadow(-2px 0px 0px #f0f); }
+      80% { transform: translate(2px, 0); filter: drop-shadow(-2px 0px 0px #0ff) drop-shadow(2px 0px 0px #f0f); }
+      90% { transform: translate(0, 0); filter: none; }
+      100% { transform: translate(0, 0); filter: drop-shadow(2px 0px 0px #0ff) drop-shadow(-2px 0px 0px #f0f); }
+    }
+    .glitch-logo {
+      animation: glitch-svg 0.3s infinite linear alternate-reverse;
+    }
+    
+    /* 토글 스위치 디자인 */
+    .btn-on { @apply bg-[#ff0055]/20 text-[#ff0055] border border-[#ff0055]/50; }
+    .btn-off { @apply bg-zinc-900 text-zinc-500 border border-zinc-700; }
   </style>
 </head>
 <body class="cyber-bg text-zinc-100 min-h-screen pb-16">
@@ -49,7 +69,23 @@
     <div class="bg-black rounded-lg p-1.5 border-2 border-[#ff0055]/40 shadow-[0_0_25px_rgba(255,0,85,0.15)] flex flex-col items-center relative overflow-hidden">
       <div class="w-full flex items-center justify-between pb-1 px-2 text-[10px] text-[#ff0055] font-cyber">
         <span>> INIT_CANVAS_RENDER... <span class="animate-pulse">_</span></span>
-        <button id="btnResetPositions" class="hover:text-white underline decoration-[#ff0055]">RESET_POS</button>
+        <div class="flex items-center gap-3">
+          <!-- ★ 도파 네온 글리치 로고 -->
+          <svg class="w-5 h-5 glitch-logo" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <polygon points="26,34 14,8 38,24" fill="#ff0055"/>
+            <polygon points="74,34 86,8 62,24" fill="#ff0055"/>
+            <circle cx="52" cy="56" r="38" fill="#cc00ff"/>
+            <circle cx="49" cy="53" r="37" fill="#ff0055"/>
+            <line x1="33" y1="46" x2="44" y2="57" stroke="#111827" stroke-width="4.5" stroke-linecap="round"/>
+            <line x1="44" y1="46" x2="33" y2="57" stroke="#111827" stroke-width="4.5" stroke-linecap="round"/>
+            <path d="M 56 50 Q 64 42 72 51" fill="none" stroke="#111827" stroke-width="4.5" stroke-linecap="round"/>
+            <path d="M 37 66 Q 52 80 67 65" fill="none" stroke="#111827" stroke-width="4.5" stroke-linecap="round"/>
+            <polygon points="61,70 65,77 67,70" fill="#111827"/>
+            <polygon points="85,18 87,14 91,16 88,19 90,23 86,21 83,24 84,20 80,18 84,17" fill="#ffffff"/>
+          </svg>
+          <!-- 리셋 버튼 -->
+          <button id="btnResetPositions" class="hover:text-white underline decoration-[#ff0055]">RESET_POS</button>
+        </div>
       </div>
       <canvas id="previewCanvas" width="960" height="540" class="w-full aspect-[16/9] bg-zinc-900 border border-zinc-800"></canvas>
     </div>
@@ -64,18 +100,15 @@
           <span>> EXPORT_GIF</span>
         </button>
       </div>
-
       <p class="text-[10px] text-zinc-500 text-center font-cyber">
         [!] 트위터 업로드 시 무손실 초고화질을 원한다면 MP4를 권장합니다.
       </p>
-
       <div id="loadingStatus" class="hidden space-y-1.5 py-1">
         <div class="w-full bg-zinc-900 h-1 rounded-none overflow-hidden border border-zinc-800">
           <div id="progressBar" class="bg-[#ff0055] h-full w-0 transition-all duration-100"></div>
         </div>
         <p id="statusMsg" class="text-center text-[10px] text-[#ff0055] font-cyber">> PROCESSING_DATA...</p>
       </div>
-
       <div id="resultArea" class="hidden flex flex-col items-center space-y-3 pt-2">
         <div id="previewMediaWrapper" class="w-full max-w-[320px] overflow-hidden border-2 border-[#ff0055] shadow-[0_0_20px_rgba(255,0,85,0.3)] aspect-[16/9] bg-black"></div>
         <div class="flex w-full gap-2">
@@ -91,10 +124,11 @@
 
     <!-- 3. 사이버 컨트롤 패널 -->
     <div class="bg-[#0a0a0a] border border-zinc-800 overflow-hidden shadow-xl">
-      <div class="grid grid-cols-3 border-b border-zinc-800 text-[11px] font-cyber font-bold text-center">
-        <button id="tabBtn1" class="tab-btn py-3 border-b-2 border-[#ff0055] text-[#ff0055] transition" data-tab="tab1">> DUAL_MEDIA</button>
-        <button id="tabBtn2" class="tab-btn py-3 border-b-2 border-transparent text-zinc-500 hover:text-zinc-300 transition" data-tab="tab2">> CONSOLE_LOG</button>
-        <button id="tabBtn3" class="tab-btn py-3 border-b-2 border-transparent text-zinc-500 hover:text-zinc-300 transition" data-tab="tab3">> SYS_COLOR</button>
+      <div class="grid grid-cols-4 border-b border-zinc-800 text-[10px] font-cyber font-bold text-center">
+        <button id="tabBtn1" class="tab-btn py-3 border-b-2 border-[#ff0055] text-[#ff0055] transition" data-tab="tab1">> MEDIA</button>
+        <button id="tabBtn2" class="tab-btn py-3 border-b-2 border-transparent text-zinc-500 hover:text-zinc-300 transition" data-tab="tab2">> CONFIG</button>
+        <button id="tabBtn3" class="tab-btn py-3 border-b-2 border-transparent text-zinc-500 hover:text-zinc-300 transition" data-tab="tab3">> COLOR</button>
+        <button id="tabBtn4" class="tab-btn py-3 border-b-2 border-transparent text-zinc-500 hover:text-zinc-300 transition" data-tab="tab4">> WIDGET</button>
       </div>
 
       <div class="p-4 space-y-4">
@@ -102,98 +136,81 @@
         <!-- [탭 1] 듀얼 미디어 및 분할선 스타일 -->
         <div id="tab1" class="tab-content space-y-4">
           
-          <!-- ★ 신규: 화면 분할 스타일 컨트롤 패널 -->
           <div class="bg-zinc-950 p-3 rounded-lg border border-zinc-800 space-y-2">
             <span class="text-[9px] font-bold text-zinc-400 font-cyber">> SPLIT_STYLE_CONFIG</span>
             <div class="grid grid-cols-3 gap-2">
-              <button id="btnToggleLine" class="py-1.5 bg-[#ff0055]/20 text-[#ff0055] border border-[#ff0055]/40 rounded-md text-[10px] font-bold transition">
-                선 표시 ON
-              </button>
-              <button id="btnToggleAngle" class="py-1.5 bg-zinc-900 text-zinc-300 border border-zinc-700 rounded-md text-[10px] font-bold transition">
-                📐 기울기: 0°
-              </button>
-              <button id="btnToggleGradient" class="py-1.5 bg-zinc-900 text-zinc-300 border border-zinc-700 rounded-md text-[10px] font-bold transition">
-                🌫️ 그라데이션 OFF
-              </button>
+              <button id="btnToggleLine" class="py-1.5 bg-[#ff0055]/20 text-[#ff0055] border border-[#ff0055]/40 rounded-md text-[10px] font-bold transition">선 표시 ON</button>
+              <button id="btnToggleAngle" class="py-1.5 bg-zinc-900 text-zinc-300 border border-zinc-700 rounded-md text-[10px] font-bold transition">📐 기울기: 0°</button>
+              <button id="btnToggleGradient" class="py-1.5 bg-zinc-900 text-zinc-300 border border-zinc-700 rounded-md text-[10px] font-bold transition">🌫️ 그라데이션 OFF</button>
             </div>
-            <p class="text-[9px] text-zinc-500 font-cyber leading-relaxed mt-1">
-              ※ 그라데이션 ON 시, 경계가 안개처럼 자연스럽게 섞입니다. (선 표시는 자동으로 꺼집니다.)
-            </p>
           </div>
 
-          <!-- 왼쪽 인물 -->
-          <div class="bg-[#050505] p-3 border border-zinc-800 space-y-2">
+          <div class="bg-[#050505] p-3 border border-zinc-800 space-y-2 relative">
+            <!-- 🔁 미디어 스왑 버튼 -->
+            <button id="btnSwapMedia" class="absolute top-2 right-2 bg-zinc-800 hover:bg-zinc-700 border border-zinc-600 text-zinc-200 text-[10px] px-2 py-1 rounded font-cyber transition">
+              🔁 SWAP L/R
+            </button>
+            
             <div class="flex justify-between items-center mb-1">
-              <label class="text-xs font-bold text-emerald-400 font-cyber">> SUBJECT_01 (LEFT)</label>
-              <span id="bgStatus1" class="text-[9px] text-[#ff0055] font-cyber border border-[#ff0055]/50 px-1 py-0.5">STANDBY</span>
+              <label class="text-xs font-bold text-zinc-300 font-cyber">> SUB_01 (LEFT)</label>
+              <span id="bgStatus1" class="text-[9px] text-[#ff0055] font-cyber border border-[#ff0055]/50 px-1 py-0.5 mt-6">STANDBY</span>
             </div>
             <div class="grid grid-cols-2 gap-2">
-              <label class="flex flex-col items-center justify-center p-2 bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 cursor-pointer transition text-center group">
-                <span class="text-xs mb-1">🖼️ 갤러리</span>
-                <input type="file" id="bgInput1Gallery" accept="image/*" class="hidden">
+              <label class="flex flex-col items-center justify-center p-2 bg-zinc-900 border border-zinc-700 cursor-pointer text-center group">
+                <span class="text-xs mb-1">🖼️ 갤러리</span><input type="file" id="bgInput1Gallery" accept="image/*" class="hidden">
               </label>
-              <label class="flex flex-col items-center justify-center p-2 bg-[#ff0055]/10 hover:bg-[#ff0055]/20 border border-[#ff0055]/40 cursor-pointer transition text-center group">
-                <span class="text-xs mb-1 text-[#ff0055]">📁 움짤(GIF)</span>
-                <input type="file" id="bgInput1Files" accept="*/*" class="hidden">
+              <label class="flex flex-col items-center justify-center p-2 bg-[#ff0055]/10 border border-[#ff0055]/40 cursor-pointer text-center group">
+                <span class="text-xs mb-1 text-[#ff0055]">📁 움짤(GIF)</span><input type="file" id="bgInput1Files" accept="*/*" class="hidden">
               </label>
             </div>
           </div>
 
-          <!-- 오른쪽 인물 -->
           <div class="bg-[#050505] p-3 border border-zinc-800 space-y-2">
             <div class="flex justify-between items-center mb-1">
-              <label class="text-xs font-bold text-[#ff0055] font-cyber">> SUBJECT_02 (RIGHT)</label>
+              <label class="text-xs font-bold text-zinc-300 font-cyber">> SUB_02 (RIGHT)</label>
               <span id="bgStatus2" class="text-[9px] text-[#ff0055] font-cyber border border-[#ff0055]/50 px-1 py-0.5">STANDBY</span>
             </div>
             <div class="grid grid-cols-2 gap-2">
-              <label class="flex flex-col items-center justify-center p-2 bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 cursor-pointer transition text-center group">
-                <span class="text-xs mb-1">🖼️ 갤러리</span>
-                <input type="file" id="bgInput2Gallery" accept="image/*" class="hidden">
+              <label class="flex flex-col items-center justify-center p-2 bg-zinc-900 border border-zinc-700 cursor-pointer text-center group">
+                <span class="text-xs mb-1">🖼️ 갤러리</span><input type="file" id="bgInput2Gallery" accept="image/*" class="hidden">
               </label>
-              <label class="flex flex-col items-center justify-center p-2 bg-[#ff0055]/10 hover:bg-[#ff0055]/20 border border-[#ff0055]/40 cursor-pointer transition text-center group">
-                <span class="text-xs mb-1 text-[#ff0055]">📁 움짤(GIF)</span>
-                <input type="file" id="bgInput2Files" accept="*/*" class="hidden">
+              <label class="flex flex-col items-center justify-center p-2 bg-[#ff0055]/10 border border-[#ff0055]/40 cursor-pointer text-center group">
+                <span class="text-xs mb-1 text-[#ff0055]">📁 움짤(GIF)</span><input type="file" id="bgInput2Files" accept="*/*" class="hidden">
               </label>
             </div>
           </div>
-
         </div>
 
         <!-- [탭 2] 대사 및 시스템 콘솔 설정 -->
         <div id="tab2" class="tab-content hidden space-y-4">
-          
-          <!-- 상단 경고 캡슐 -->
           <div>
             <label class="text-[10px] text-zinc-400 font-cyber">> WARNING_MESSAGE</label>
-            <input type="text" id="quoteText" placeholder="예: [도파] 프로젝트의 접근 권한이 거부되었습니다." value="" class="w-full mt-1 bg-[#050505] border border-zinc-800 px-3 py-2 text-xs text-[#ff0055] placeholder-zinc-700 font-cyber focus:outline-none focus:border-[#ff0055]">
+            <input type="text" id="quoteText" placeholder="예: 접근 권한이 거부되었습니다." value="" class="w-full mt-1 bg-[#050505] border border-zinc-800 px-3 py-2 text-xs text-[#ff0055] placeholder-zinc-700 font-cyber focus:outline-none focus:border-[#ff0055]">
           </div>
 
-          <!-- 타겟 1 & 2 스탯 설정 -->
           <div class="grid grid-cols-2 gap-2">
             <div class="bg-[#050505] p-2.5 border border-zinc-800 space-y-2">
-              <span class="text-[9px] font-bold text-emerald-400 font-cyber">> SUB_01 (L)</span>
+              <span class="text-[9px] font-bold text-zinc-400 font-cyber">> SUB_01 (LEFT)</span>
               <div>
-                <input type="text" id="name1" placeholder="이름 (예: 윤세라)" value="" class="w-full bg-zinc-900 border border-zinc-800 px-2 py-1.5 text-[11px] text-white font-cyber mb-1 placeholder-zinc-600">
+                <input type="text" id="name1" placeholder="이름 (예: 윤세라)" value="" class="w-full bg-zinc-900 border border-zinc-800 px-2 py-1.5 text-[11px] text-white font-cyber mb-1">
                 <div class="flex items-center gap-1">
-                  <span class="text-[8px] text-zinc-500">DANGER</span>
-                  <input type="number" id="danger1" value="20" min="0" max="100" class="w-full bg-zinc-900 border border-zinc-800 px-1 py-1 text-[10px] text-emerald-400 font-cyber">
+                  <span class="text-[8px] text-zinc-500">DNG</span>
+                  <input type="number" id="danger1" value="20" min="0" max="100" class="w-full bg-zinc-900 border border-zinc-800 px-1 py-1 text-[10px] text-zinc-300 font-cyber">
                 </div>
               </div>
             </div>
-            
             <div class="bg-[#050505] p-2.5 border border-zinc-800 space-y-2">
-              <span class="text-[9px] font-bold text-[#ff0055] font-cyber">> SUB_02 (R)</span>
+              <span class="text-[9px] font-bold text-zinc-400 font-cyber">> SUB_02 (RIGHT)</span>
               <div>
-                <input type="text" id="name2" placeholder="이름 (예: 백우진)" value="" class="w-full bg-zinc-900 border border-zinc-800 px-2 py-1.5 text-[11px] text-white font-cyber mb-1 placeholder-zinc-600">
+                <input type="text" id="name2" placeholder="이름 (예: 백우진)" value="" class="w-full bg-zinc-900 border border-zinc-800 px-2 py-1.5 text-[11px] text-white font-cyber mb-1">
                 <div class="flex items-center gap-1">
-                  <span class="text-[8px] text-zinc-500">DANGER</span>
-                  <input type="number" id="danger2" value="95" min="0" max="100" class="w-full bg-zinc-900 border border-zinc-800 px-1 py-1 text-[10px] text-[#ff0055] font-cyber">
+                  <span class="text-[8px] text-zinc-500">DNG</span>
+                  <input type="number" id="danger2" value="95" min="0" max="100" class="w-full bg-zinc-900 border border-zinc-800 px-1 py-1 text-[10px] text-zinc-300 font-cyber">
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- 티키타카 콘솔 로그 -->
           <div class="space-y-2 border-t border-zinc-800 pt-3">
             <div class="flex items-center justify-between">
               <span class="text-[10px] font-bold text-zinc-300 font-cyber">> CONSOLE_LOGS</span>
@@ -201,27 +218,39 @@
                 + ADD_LOG
               </button>
             </div>
-            <p class="text-[9px] text-zinc-500 font-cyber mb-1">※ [L_USR]은 왼쪽, [R_USR]은 오른쪽 페어의 타자 색상으로 표시됩니다.</p>
             <div id="bubblesContainer" class="space-y-1.5 max-h-56 overflow-y-auto pr-1"></div>
           </div>
         </div>
 
-        <!-- [탭 3] 네온 테마 컬러 -->
+        <!-- [탭 3] 독립 컬러 설정 -->
         <div id="tab3" class="tab-content hidden space-y-4">
-          <div>
-            <label class="block text-[10px] text-zinc-400 mb-2 font-cyber">> SYSTEM_NEON_COLOR</label>
-            <div class="flex items-center gap-2 flex-wrap">
-              <button class="color-btn w-8 h-8 rounded-none bg-[#ff0055] border-2 border-white transition" data-color="#ff0055" title="도파 핑크"></button>
-              <button class="color-btn w-8 h-8 rounded-none bg-[#00ffcc] border-2 border-transparent transition" data-color="#00ffcc" title="사이버 시안"></button>
-              <button class="color-btn w-8 h-8 rounded-none bg-[#cc00ff] border-2 border-transparent transition" data-color="#cc00ff" title="글리치 퍼플"></button>
-              <button class="color-btn w-8 h-8 rounded-none bg-[#ffff00] border-2 border-transparent transition" data-color="#ffff00" title="워닝 옐로우"></button>
-              <button class="color-btn w-8 h-8 rounded-none bg-[#00ff00] border-2 border-transparent transition" data-color="#00ff00" title="터미널 그린"></button>
-              
-              <div class="flex items-center gap-1.5 ml-2 pl-2 border-l border-zinc-800">
-                <input type="color" id="nativeColorPicker" value="#ff0055" class="w-8 h-8 cursor-pointer bg-transparent border-0 p-0">
+          <div class="bg-zinc-950 p-3 rounded-lg border border-zinc-800 space-y-3">
+            <span class="text-[10px] text-zinc-400 font-cyber">> COLOR_SETTINGS</span>
+            <div class="grid grid-cols-2 gap-4">
+              <div class="flex flex-col gap-1">
+                <label class="text-[9px] font-bold text-zinc-300 font-cyber">LEFT_USR COLOR</label>
+                <input type="color" id="colorLeft" value="#10b981" class="w-full h-8 cursor-pointer bg-transparent border-0 p-0">
+              </div>
+              <div class="flex flex-col gap-1">
+                <label class="text-[9px] font-bold text-zinc-300 font-cyber">RIGHT_USR COLOR</label>
+                <input type="color" id="colorRight" value="#ff0055" class="w-full h-8 cursor-pointer bg-transparent border-0 p-0">
               </div>
             </div>
-            <p class="text-[9px] text-zinc-600 font-cyber mt-2">※ UI 보더, 오른쪽 페어 글씨, 글리치 하이라이트에 적용됩니다.</p>
+            <p class="text-[9px] text-zinc-600 font-cyber">※ 각 인물의 프로필 게이지 바, 로그 터미널 글씨, 대기 화면 배경 등에 독립적으로 적용됩니다.</p>
+          </div>
+        </div>
+
+        <!-- [탭 4] 위젯(오브젝트) ON/OFF 토글 -->
+        <div id="tab4" class="tab-content hidden space-y-4">
+          <div class="bg-zinc-950 p-3 rounded-lg border border-zinc-800 space-y-2">
+            <span class="text-[10px] text-zinc-400 font-cyber">> UI_COMPONENT_MODULES</span>
+            <div class="grid grid-cols-2 gap-2 mt-2">
+              <button class="toggle-widget btn-on text-[10px] py-2 rounded font-cyber transition" data-widget="profile1">[L] PROFILE_ON</button>
+              <button class="toggle-widget btn-on text-[10px] py-2 rounded font-cyber transition" data-widget="profile2">[R] PROFILE_ON</button>
+              <button class="toggle-widget btn-on text-[10px] py-2 rounded font-cyber transition" data-widget="logConsole">CONSOLE_LOG_ON</button>
+              <button class="toggle-widget btn-on text-[10px] py-2 rounded font-cyber transition" data-widget="warningBox">WARNING_BOX_ON</button>
+              <button class="toggle-widget btn-on text-[10px] py-2 rounded font-cyber transition col-span-2" data-widget="barcode">BARCODE_LABEL_ON</button>
+            </div>
           </div>
         </div>
 
@@ -241,43 +270,30 @@
     const canvas = document.getElementById('previewCanvas');
     const ctx = canvas.getContext('2d');
 
-    // 두 개의 독립적인 배경 미디어
-    let bgMedia1 = null; // LEFT
-    let bgMedia2 = null; // RIGHT
-    let animProgress = 0;
-    let previewTimer = null;
-    let isExporting = false;
-    let themeColor = '#ff0055';
+    let bgMedia1 = null; let bgMedia2 = null;
+    let animProgress = 0; let previewTimer = null; let isExporting = false;
 
-    // 분할선 스타일 전역 상태
+    // 분할 스타일 및 컬러 상태
     let showSplitLine = true;
-    let splitAngle = 0; // 0 (수직), 20 (우상향 사선), -20 (우하향 사선)
+    let splitAngle = 0;
     let isGradientEdge = false;
+    let cLeft = '#10b981'; // LEFT Color
+    let cRight = '#ff0055'; // RIGHT Color
 
-    // 도파 오리지널 네온 악마 로고
-    const dopaDevilSvg = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><polygon points="26,34 14,8 38,24" fill="%23ff0055"/><polygon points="74,34 86,8 62,24" fill="%23ff0055"/><circle cx="52" cy="56" r="38" fill="%23cc00ff"/><circle cx="49" cy="53" r="37" fill="%23ff0055"/><line x1="33" y1="46" x2="44" y2="57" stroke="%23111827" stroke-width="4.5" stroke-linecap="round"/><line x1="44" y1="46" x2="33" y2="57" stroke="%23111827" stroke-width="4.5" stroke-linecap="round"/><path d="M 56 50 Q 64 42 72 51" fill="none" stroke="%23111827" stroke-width="4.5" stroke-linecap="round"/><path d="M 37 66 Q 52 80 67 65" fill="none" stroke="%23111827" stroke-width="4.5" stroke-linecap="round"/><polygon points="61,70 65,77 67,70" fill="%23111827"/><polygon points="85,18 87,14 91,16 88,19 90,23 86,21 83,24 84,20 80,18 84,17" fill="%23ffffff"/></svg>`;
-    const dopaLogoImg = new Image();
-    dopaLogoImg.src = dopaDevilSvg;
-
+    function drawRect(c, x, y, w, h) { c.beginPath(); c.rect(x, y, w, h); c.closePath(); }
     function getWrappedLines(context, text, maxWidth) {
       if (!text) return [''];
-      const chars = Array.from(text);
-      const lines = [];
-      let currentLine = '';
+      const chars = Array.from(text); const lines = []; let currentLine = '';
       for (let i = 0; i < chars.length; i++) {
         const testLine = currentLine + chars[i];
         if (context.measureText(testLine).width > maxWidth && currentLine.length > 0) {
-          lines.push(currentLine);
-          currentLine = chars[i];
-        } else {
-          currentLine = testLine;
-        }
+          lines.push(currentLine); currentLine = chars[i];
+        } else { currentLine = testLine; }
       }
       if (currentLine) lines.push(currentLine);
       return lines.length > 0 ? lines : [''];
     }
 
-    // 오브젝트 초기 위치
     const defaultElements = {
       profile1:   { id: 'profile1',   x: 40,  y: 60,  w: 220, h: 90 },
       profile2:   { id: 'profile2',   x: 700, y: 60,  w: 220, h: 90 },
@@ -287,8 +303,9 @@
     };
     let elements = JSON.parse(JSON.stringify(defaultElements));
     let renderOrder = ['barcode', 'profile1', 'profile2', 'warningBox', 'logConsole'];
-    let draggingItem = null;
-    let dragOffset = { x: 0, y: 0 };
+    let wState = { profile1: true, profile2: true, logConsole: true, warningBox: true, barcode: true };
+
+    let draggingItem = null; let dragOffset = { x: 0, y: 0 };
 
     let logEntries = [
       { type: 'sys',   text: '', placeholder: 'SYSTEM: 두 개체의 접촉이 감지되었습니다.' },
@@ -297,35 +314,27 @@
       { type: 'err',   text: '', placeholder: 'ERROR: 위험도가 임계점을 돌파했습니다!' }
     ];
 
-    // 분할 스타일 제어 이벤트
+    // 스플릿 컨트롤
     const btnToggleLine = document.getElementById('btnToggleLine');
     const btnToggleAngle = document.getElementById('btnToggleAngle');
     const btnToggleGradient = document.getElementById('btnToggleGradient');
 
     btnToggleLine.addEventListener('click', () => {
       showSplitLine = !showSplitLine;
-      if (showSplitLine) {
-        btnToggleLine.textContent = '선 표시 ON';
-        btnToggleLine.className = 'py-1.5 bg-[#ff0055]/20 text-[#ff0055] border border-[#ff0055]/40 rounded-md text-[10px] font-bold transition';
-      } else {
-        btnToggleLine.textContent = '선 표시 OFF';
-        btnToggleLine.className = 'py-1.5 bg-zinc-900 text-zinc-400 border border-zinc-700 rounded-md text-[10px] font-bold transition';
-      }
+      btnToggleLine.textContent = showSplitLine ? '선 표시 ON' : '선 표시 OFF';
+      btnToggleLine.className = showSplitLine ? 'py-1.5 bg-[#ff0055]/20 text-[#ff0055] border border-[#ff0055]/40 rounded-md text-[10px] font-bold transition' : 'py-1.5 bg-zinc-900 text-zinc-400 border border-zinc-700 rounded-md text-[10px] font-bold transition';
       draw();
     });
 
     btnToggleAngle.addEventListener('click', () => {
       if (splitAngle === 0) {
-        splitAngle = 20; // 우상향
-        btnToggleAngle.textContent = '📐 기울기: 20° (/)';
+        splitAngle = 20; btnToggleAngle.textContent = '📐 기울기: 20° (/)';
         btnToggleAngle.className = 'py-1.5 bg-[#00ffcc]/20 text-[#00ffcc] border border-[#00ffcc]/40 rounded-md text-[10px] font-bold transition';
       } else if (splitAngle === 20) {
-        splitAngle = -20; // 우하향
-        btnToggleAngle.textContent = '📐 기울기: -20° (\\)';
+        splitAngle = -20; btnToggleAngle.textContent = '📐 기울기: -20° (\\)';
         btnToggleAngle.className = 'py-1.5 bg-[#cc00ff]/20 text-[#cc00ff] border border-[#cc00ff]/40 rounded-md text-[10px] font-bold transition';
       } else {
-        splitAngle = 0; // 수직
-        btnToggleAngle.textContent = '📐 기울기: 0° (|)';
+        splitAngle = 0; btnToggleAngle.textContent = '📐 기울기: 0° (|)';
         btnToggleAngle.className = 'py-1.5 bg-zinc-900 text-zinc-300 border border-zinc-700 rounded-md text-[10px] font-bold transition';
       }
       draw();
@@ -336,9 +345,7 @@
       if (isGradientEdge) {
         btnToggleGradient.textContent = '🌫️ 그라데이션 ON';
         btnToggleGradient.className = 'py-1.5 bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 rounded-md text-[10px] font-bold transition';
-        // 그라데이션 켤 때는 선 표시 강제 OFF
-        showSplitLine = false;
-        btnToggleLine.textContent = '선 표시 OFF (자동)';
+        showSplitLine = false; btnToggleLine.textContent = '선 표시 OFF (자동)';
         btnToggleLine.className = 'py-1.5 bg-zinc-900 text-zinc-600 border border-zinc-800 rounded-md text-[10px] font-bold transition cursor-not-allowed';
       } else {
         btnToggleGradient.textContent = '🌫️ 그라데이션 OFF';
@@ -349,45 +356,52 @@
       draw();
     });
 
-    // DOM 참조
-    const bgInput1Gallery = document.getElementById('bgInput1Gallery');
-    const bgInput1Files = document.getElementById('bgInput1Files');
-    const bgStatus1 = document.getElementById('bgStatus1');
-    const bgInput2Gallery = document.getElementById('bgInput2Gallery');
-    const bgInput2Files = document.getElementById('bgInput2Files');
-    const bgStatus2 = document.getElementById('bgStatus2');
+    // 위젯 ON/OFF 컨트롤
+    document.querySelectorAll('.toggle-widget').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const wKey = btn.dataset.widget;
+        wState[wKey] = !wState[wKey];
+        if(wState[wKey]) {
+          btn.classList.remove('btn-off'); btn.classList.add('btn-on');
+          btn.textContent = btn.textContent.replace('OFF', 'ON');
+        } else {
+          btn.classList.remove('btn-on'); btn.classList.add('btn-off');
+          btn.textContent = btn.textContent.replace('ON', 'OFF');
+        }
+        draw();
+      });
+    });
 
-    const quoteText = document.getElementById('quoteText');
-    const name1 = document.getElementById('name1');
-    const danger1 = document.getElementById('danger1');
-    const name2 = document.getElementById('name2');
-    const danger2 = document.getElementById('danger2');
-    
-    const nativeColorPicker = document.getElementById('nativeColorPicker');
-    const bubblesContainer = document.getElementById('bubblesContainer');
-    const btnAddBubble = document.getElementById('btnAddBubble');
-    const btnResetPositions = document.getElementById('btnResetPositions');
+    // 컬러 커스텀
+    const inColorLeft = document.getElementById('colorLeft');
+    const inColorRight = document.getElementById('colorRight');
+    inColorLeft.addEventListener('input', (e) => { cLeft = e.target.value; draw(); });
+    inColorRight.addEventListener('input', (e) => { cRight = e.target.value; draw(); });
 
-    btnResetPositions.addEventListener('click', () => {
-      elements = JSON.parse(JSON.stringify(defaultElements));
-      renderOrder = ['barcode', 'profile1', 'profile2', 'warningBox', 'logConsole'];
+    // 스왑 버튼
+    document.getElementById('btnSwapMedia').addEventListener('click', () => {
+      const tb = bgMedia1; bgMedia1 = bgMedia2; bgMedia2 = tb;
+      const tn = name1.value; name1.value = name2.value; name2.value = tn;
+      const td = danger1.value; danger1.value = danger2.value; danger2.value = td;
       draw();
     });
 
-    // 로그 목록 렌더링
+    // 로그 렌더링 (Select 드롭다운으로 개선)
+    const bubblesContainer = document.getElementById('bubblesContainer');
+    const btnAddBubble = document.getElementById('btnAddBubble');
     function renderLogInputs() {
       bubblesContainer.innerHTML = '';
       logEntries.forEach((log, idx) => {
         const row = document.createElement('div');
-        row.className = 'flex items-center gap-1 bg-[#050505] p-1.5 border border-zinc-800 text-xs';
+        row.className = 'flex items-center gap-1.5 bg-[#050505] p-1.5 border border-zinc-800 text-xs';
         
-        let btnClass = 'text-zinc-500'; let btnText = 'SYS';
-        if(log.type === 'left') { btnClass = 'text-emerald-400'; btnText = 'L_USR'; }
-        if(log.type === 'right') { btnClass = 'text-[#ff0055] font-bold'; btnText = 'R_USR'; }
-        if(log.type === 'err') { btnClass = 'text-red-600 bg-red-900/30 px-1 font-bold'; btnText = 'ERR!'; }
-
         row.innerHTML = `
-          <button class="toggle-log-type px-1.5 py-1 text-[9px] font-cyber ${btnClass}" data-index="${idx}">[${btnText}]</button>
+          <select class="log-type-select bg-zinc-900 text-[9px] border border-zinc-700 font-cyber text-white py-1 focus:outline-none" data-index="${idx}">
+            <option value="sys" ${log.type==='sys'?'selected':''}>[SYS]</option>
+            <option value="left" ${log.type==='left'?'selected':''}>[L_USR]</option>
+            <option value="right" ${log.type==='right'?'selected':''}>[R_USR]</option>
+            <option value="err" ${log.type==='err'?'selected':''}>[ERR!]</option>
+          </select>
           <input type="text" value="${log.text}" placeholder="${log.placeholder}" class="log-text flex-1 bg-transparent border-0 text-white placeholder-zinc-700 text-[10px] px-1 font-cyber focus:outline-none" data-index="${idx}">
           <button class="delete-log text-zinc-600 hover:text-red-500 px-1 text-[10px]" data-index="${idx}">X</button>
         `;
@@ -396,13 +410,9 @@
 
       elements.logConsole.h = Math.max(160, 45 + logEntries.length * 36);
 
-      document.querySelectorAll('.toggle-log-type').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          const i = e.target.dataset.index;
-          const types = ['sys', 'left', 'right', 'err'];
-          let curIdx = types.indexOf(logEntries[i].type);
-          logEntries[i].type = types[(curIdx + 1) % 4];
-          renderLogInputs(); draw();
+      document.querySelectorAll('.log-type-select').forEach(sel => {
+        sel.addEventListener('change', (e) => {
+          logEntries[e.target.dataset.index].type = e.target.value; draw();
         });
       });
       document.querySelectorAll('.log-text').forEach(input => {
@@ -418,14 +428,13 @@
         });
       });
     }
-
     btnAddBubble.addEventListener('click', () => {
       logEntries.push({ type: 'sys', text: '', placeholder: 'NEW_LOG_ENTRY' });
       renderLogInputs(); draw();
     });
     renderLogInputs();
 
-    // 탭 및 컬러 전환
+    // 탭 전환
     document.querySelectorAll('.tab-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('.tab-btn').forEach(b => {
@@ -439,70 +448,41 @@
       });
     });
 
-    document.querySelectorAll('.color-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('border-white', 'border-transparent'));
-        document.querySelectorAll('.color-btn').forEach(b => b.classList.add('border-transparent'));
-        btn.classList.add('border-white');
-        btn.classList.remove('border-transparent');
-        themeColor = btn.dataset.color;
-        nativeColorPicker.value = themeColor;
-        draw();
-      });
-    });
+    const quoteText = document.getElementById('quoteText');
+    const danger1 = document.getElementById('danger1'), danger2 = document.getElementById('danger2');
+    [quoteText, danger1, danger2].forEach(el => el.addEventListener('input', () => draw()));
 
-    nativeColorPicker.addEventListener('input', (e) => { themeColor = e.target.value; draw(); });
-    [quoteText, name1, name2, danger1, danger2].forEach(el => el.addEventListener('input', () => draw()));
-
-    // GIF 파서 공통 함수
+    // GIF 파서
     async function loadMediaFile(file, statusEl) {
       if (!file) return null;
-      if (statusEl) {
-        statusEl.textContent = 'ANALYZING...';
-        statusEl.className = 'text-[9px] text-[#ff0055] font-cyber border border-[#ff0055]/50 px-1 py-0.5 animate-pulse';
-      }
-
+      if (statusEl) { statusEl.textContent = 'ANALYZING...'; statusEl.className = 'text-[9px] text-[#ff0055] font-cyber border border-[#ff0055]/50 px-1 py-0.5 animate-pulse'; }
       try {
         const buffer = await file.arrayBuffer();
         const bytes = new Uint8Array(buffer);
         if (bytes[0] === 0x47 && bytes[1] === 0x49 && bytes[2] === 0x46) {
           const ReaderClass = (window.omggif && window.omggif.GifReader) || window.GifReader;
           if (ReaderClass) {
-            const reader = new ReaderClass(bytes);
-            const numFrames = reader.numFrames();
+            const reader = new ReaderClass(bytes); const numFrames = reader.numFrames();
             if (numFrames > 1) {
-              const w = reader.width, h = reader.height;
-              const canvasList = [];
-              const framePixels = new Uint8ClampedArray(w * h * 4);
+              const w = reader.width, h = reader.height; const canvasList = []; const framePixels = new Uint8ClampedArray(w * h * 4);
               for (let i = 0; i < numFrames; i++) {
                 reader.decodeAndBlitFrameRGBA(i, framePixels);
-                const fCanvas = document.createElement('canvas');
-                fCanvas.width = w; fCanvas.height = h;
-                const fCtx = fCanvas.getContext('2d');
-                const imgData = fCtx.createImageData(w, h);
-                imgData.data.set(framePixels);
-                fCtx.putImageData(imgData, 0, 0);
-                canvasList.push(fCanvas);
+                const fCanvas = document.createElement('canvas'); fCanvas.width = w; fCanvas.height = h;
+                const fCtx = fCanvas.getContext('2d'); const imgData = fCtx.createImageData(w, h);
+                imgData.data.set(framePixels); fCtx.putImageData(imgData, 0, 0); canvasList.push(fCanvas);
               }
-              if (statusEl) {
-                statusEl.textContent = `GIF_OK [${canvasList.length}F]`;
-                statusEl.className = 'text-[9px] text-emerald-400 font-cyber border border-emerald-500/50 px-1 py-0.5';
-              }
+              if (statusEl) { statusEl.textContent = `GIF_OK [${canvasList.length}F]`; statusEl.className = 'text-[9px] text-emerald-400 font-cyber border border-emerald-500/50 px-1 py-0.5'; }
               return { isGif: true, frames: canvasList, width: w, height: h };
             }
           }
         }
       } catch (err) { console.warn(err); }
-
       return new Promise((resolve) => {
         const reader = new FileReader();
         reader.onload = (e) => {
           const img = new Image();
           img.onload = () => {
-            if (statusEl) {
-              statusEl.textContent = 'IMG_OK';
-              statusEl.className = 'text-[9px] text-zinc-300 font-cyber border border-zinc-600 px-1 py-0.5';
-            }
+            if (statusEl) { statusEl.textContent = 'IMG_OK'; statusEl.className = 'text-[9px] text-zinc-300 font-cyber border border-zinc-600 px-1 py-0.5'; }
             resolve({ isGif: false, img, width: img.width, height: img.height });
           };
           img.src = e.target.result;
@@ -513,15 +493,15 @@
 
     async function onMediaSelected(inputEl, isLeft) {
       if (inputEl.files && inputEl.files[0]) {
-        if (isLeft) bgMedia1 = await loadMediaFile(inputEl.files[0], bgStatus1);
-        else bgMedia2 = await loadMediaFile(inputEl.files[0], bgStatus2);
+        if (isLeft) bgMedia1 = await loadMediaFile(inputEl.files[0], document.getElementById('bgStatus1'));
+        else bgMedia2 = await loadMediaFile(inputEl.files[0], document.getElementById('bgStatus2'));
         draw();
       }
     }
-    bgInput1Gallery.addEventListener('change', () => onMediaSelected(bgInput1Gallery, true));
-    bgInput1Files.addEventListener('change', () => onMediaSelected(bgInput1Files, true));
-    bgInput2Gallery.addEventListener('change', () => onMediaSelected(bgInput2Gallery, false));
-    bgInput2Files.addEventListener('change', () => onMediaSelected(bgInput2Files, false));
+    document.getElementById('bgInput1Gallery').addEventListener('change', (e) => onMediaSelected(e.target, true));
+    document.getElementById('bgInput1Files').addEventListener('change', (e) => onMediaSelected(e.target, true));
+    document.getElementById('bgInput2Gallery').addEventListener('change', (e) => onMediaSelected(e.target, false));
+    document.getElementById('bgInput2Files').addEventListener('change', (e) => onMediaSelected(e.target, false));
 
     function getDrawableSource(media, prog) {
       if (!media) return null;
@@ -537,22 +517,17 @@
       const rect = canvas.getBoundingClientRect();
       const clientX = e.touches ? e.touches[0].clientX : e.clientX;
       const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-      return {
-        x: (clientX - rect.left) * (canvas.width / rect.width),
-        y: (clientY - rect.top) * (canvas.height / rect.height)
-      };
+      return { x: (clientX - rect.left) * (canvas.width / rect.width), y: (clientY - rect.top) * (canvas.height / rect.height) };
     }
-
     function handleDragStart(e) {
       if (isExporting) return;
       const pos = getCanvasCoords(e);
       for (let i = renderOrder.length - 1; i >= 0; i--) {
         const key = renderOrder[i];
+        if (!wState[key]) continue;
         const item = elements[key];
         if (pos.x >= item.x && pos.x <= item.x + item.w && pos.y >= item.y && pos.y <= item.y + item.h) {
-          draggingItem = key;
-          dragOffset.x = pos.x - item.x;
-          dragOffset.y = pos.y - item.y;
+          draggingItem = key; dragOffset.x = pos.x - item.x; dragOffset.y = pos.y - item.y;
           renderOrder.splice(i, 1); renderOrder.push(key);
           if (e.cancelable) e.preventDefault(); draw(); break;
         }
@@ -561,8 +536,7 @@
     function handleDragMove(e) {
       if (!draggingItem || isExporting) return;
       const pos = getCanvasCoords(e);
-      elements[draggingItem].x = Math.round(pos.x - dragOffset.x);
-      elements[draggingItem].y = Math.round(pos.y - dragOffset.y);
+      elements[draggingItem].x = Math.round(pos.x - dragOffset.x); elements[draggingItem].y = Math.round(pos.y - dragOffset.y);
       if (e.cancelable) e.preventDefault(); draw();
     }
     function handleDragEnd() { draggingItem = null; draw(); }
@@ -574,113 +548,68 @@
     function drawMediaCover(c, media, srcImg, x, y, w, h) {
       if (!srcImg || !media) return;
       const scale = Math.max(w / media.width, h / media.height);
-      const sw = media.width * scale;
-      const sh = media.height * scale;
+      const sw = media.width * scale; const sh = media.height * scale;
       c.drawImage(srcImg, x + (w - sw) / 2, y + (h - sh) / 2, sw, sh);
     }
 
-    // [신규] 그라데이션 및 사선 분할 처리 엔진
     function drawSplitBackground(prog) {
-      const w = canvas.width;
-      const h = canvas.height;
-      const cx = w / 2;
-      const cy = h / 2;
-      
+      const w = canvas.width, h = canvas.height, cx = w / 2, cy = h / 2;
       const rad = splitAngle * Math.PI / 180;
       const tan = Math.tan(rad);
-      const dx = (h / 2) * tan; // 위아래로 틀어지는 가로 간격
+      const dx = (h / 2) * tan;
 
-      // [1] 그라데이션 블렌딩 모드 (안개처럼 섞임)
       if (isGradientEdge) {
-        // 왼쪽 베이스 렌더링
         const src1 = getDrawableSource(bgMedia1, prog);
         if (src1) drawMediaCover(ctx, bgMedia1, src1, 0, 0, w, h);
         else {
-          ctx.fillStyle = 'rgba(16, 185, 129, 0.08)'; ctx.fillRect(0, 0, w, h);
-          ctx.fillStyle = '#10b981'; ctx.font = '12px "Share Tech Mono"'; ctx.textAlign = 'center';
-          ctx.fillText('WAITING FOR SUBJECT_01...', 240, 270);
+          ctx.fillStyle = `rgba(${parseInt(cLeft.slice(1,3),16)}, ${parseInt(cLeft.slice(3,5),16)}, ${parseInt(cLeft.slice(5,7),16)}, 0.08)`; ctx.fillRect(0, 0, w, h);
+          ctx.fillStyle = cLeft; ctx.font = '12px "Share Tech Mono"'; ctx.textAlign = 'center'; ctx.fillText('WAITING FOR SUB_01...', 240, 270);
         }
 
-        // 오프스크린 캔버스로 오른쪽 마스크 렌더링
-        const offCanvas = document.createElement('canvas');
-        offCanvas.width = w; offCanvas.height = h;
+        const offCanvas = document.createElement('canvas'); offCanvas.width = w; offCanvas.height = h;
         const offCtx = offCanvas.getContext('2d');
-
         const src2 = getDrawableSource(bgMedia2, prog);
         if (src2) drawMediaCover(offCtx, bgMedia2, src2, 0, 0, w, h);
         else {
-          offCtx.fillStyle = `rgba(${parseInt(themeColor.slice(1,3),16)}, ${parseInt(themeColor.slice(3,5),16)}, ${parseInt(themeColor.slice(5,7),16)}, 0.08)`;
-          offCtx.fillRect(0, 0, w, h);
-          offCtx.fillStyle = themeColor; offCtx.font = '12px "Share Tech Mono"'; offCtx.textAlign = 'center';
-          offCtx.fillText('WAITING FOR SUBJECT_02...', 720, 270);
+          offCtx.fillStyle = `rgba(${parseInt(cRight.slice(1,3),16)}, ${parseInt(cRight.slice(3,5),16)}, ${parseInt(cRight.slice(5,7),16)}, 0.08)`; offCtx.fillRect(0, 0, w, h);
+          offCtx.fillStyle = cRight; offCtx.font = '12px "Share Tech Mono"'; offCtx.textAlign = 'center'; offCtx.fillText('WAITING FOR SUB_02...', 720, 270);
         }
 
-        // 사선 각도에 맞춘 리니어 그라데이션 마스크 계산
-        const blurWidth = 300; // 섞이는 구간의 넓이
-        const gx1 = cx - Math.cos(rad) * blurWidth / 2;
-        const gy1 = cy + Math.sin(rad) * blurWidth / 2;
-        const gx2 = cx + Math.cos(rad) * blurWidth / 2;
-        const gy2 = cy - Math.sin(rad) * blurWidth / 2;
-        
+        const blurWidth = 300;
+        const gx1 = cx - Math.cos(rad) * blurWidth / 2, gy1 = cy + Math.sin(rad) * blurWidth / 2;
+        const gx2 = cx + Math.cos(rad) * blurWidth / 2, gy2 = cy - Math.sin(rad) * blurWidth / 2;
         const grad = offCtx.createLinearGradient(gx1, gy1, gx2, gy2);
-        grad.addColorStop(0, 'rgba(0,0,0,0)');
-        grad.addColorStop(1, 'rgba(0,0,0,1)');
+        grad.addColorStop(0, 'rgba(0,0,0,0)'); grad.addColorStop(1, 'rgba(0,0,0,1)');
 
         offCtx.globalCompositeOperation = 'destination-in';
-        offCtx.fillStyle = grad;
-        offCtx.fillRect(0, 0, w, h);
-        
-        // 메인 캔버스에 합성
+        offCtx.fillStyle = grad; offCtx.fillRect(0, 0, w, h);
         ctx.drawImage(offCanvas, 0, 0);
-      } 
-      // [2] 하드 컷 스플릿 모드 (사선 or 수직)
-      else {
-        // 왼쪽 (SUBJECT 01)
-        ctx.save();
-        ctx.beginPath();
-        ctx.moveTo(0, 0); ctx.lineTo(cx + dx, 0); ctx.lineTo(cx - dx, h); ctx.lineTo(0, h); ctx.closePath();
-        ctx.clip();
-        
+      } else {
+        ctx.save(); ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(cx + dx, 0); ctx.lineTo(cx - dx, h); ctx.lineTo(0, h); ctx.closePath(); ctx.clip();
         const src1 = getDrawableSource(bgMedia1, prog);
         if (src1) drawMediaCover(ctx, bgMedia1, src1, 0, 0, w, h);
         else {
-          ctx.fillStyle = 'rgba(16, 185, 129, 0.08)'; ctx.fillRect(0, 0, w, h);
-          ctx.fillStyle = '#10b981'; ctx.font = '12px "Share Tech Mono"'; ctx.textAlign = 'center';
-          ctx.fillText('WAITING FOR SUBJECT_01...', cx - dx/2 - 120, 270);
+          ctx.fillStyle = `rgba(${parseInt(cLeft.slice(1,3),16)}, ${parseInt(cLeft.slice(3,5),16)}, ${parseInt(cLeft.slice(5,7),16)}, 0.08)`; ctx.fillRect(0, 0, w, h);
+          ctx.fillStyle = cLeft; ctx.font = '12px "Share Tech Mono"'; ctx.textAlign = 'center'; ctx.fillText('WAITING FOR SUB_01...', cx - dx/2 - 120, 270);
         }
         ctx.restore();
 
-        // 오른쪽 (SUBJECT 02)
-        ctx.save();
-        ctx.beginPath();
-        ctx.moveTo(cx + dx, 0); ctx.lineTo(w, 0); ctx.lineTo(w, h); ctx.lineTo(cx - dx, h); ctx.closePath();
-        ctx.clip();
-        
+        ctx.save(); ctx.beginPath(); ctx.moveTo(cx + dx, 0); ctx.lineTo(w, 0); ctx.lineTo(w, h); ctx.lineTo(cx - dx, h); ctx.closePath(); ctx.clip();
         const src2 = getDrawableSource(bgMedia2, prog);
         if (src2) drawMediaCover(ctx, bgMedia2, src2, 0, 0, w, h);
         else {
-          ctx.fillStyle = `rgba(${parseInt(themeColor.slice(1,3),16)}, ${parseInt(themeColor.slice(3,5),16)}, ${parseInt(themeColor.slice(5,7),16)}, 0.08)`; 
-          ctx.fillRect(0, 0, w, h);
-          ctx.fillStyle = themeColor; ctx.font = '12px "Share Tech Mono"'; ctx.textAlign = 'center';
-          ctx.fillText('WAITING FOR SUBJECT_02...', cx + dx/2 + 120, 270);
+          ctx.fillStyle = `rgba(${parseInt(cRight.slice(1,3),16)}, ${parseInt(cRight.slice(3,5),16)}, ${parseInt(cRight.slice(5,7),16)}, 0.08)`; ctx.fillRect(0, 0, w, h);
+          ctx.fillStyle = cRight; ctx.font = '12px "Share Tech Mono"'; ctx.textAlign = 'center'; ctx.fillText('WAITING FOR SUB_02...', cx + dx/2 + 120, 270);
         }
         ctx.restore();
 
-        // 중앙 분할선 & 싱크 배지 그리기 (옵션이 켜져 있을 때만)
         if (showSplitLine) {
-          ctx.strokeStyle = themeColor; ctx.lineWidth = 2;
-          ctx.beginPath(); ctx.moveTo(cx + dx, 0); ctx.lineTo(cx - dx, h); ctx.stroke();
-          
-          if (Math.random() > 0.8) {
-            ctx.strokeStyle = 'rgba(255, 0, 85, 0.5)';
-            ctx.beginPath(); ctx.moveTo(cx + dx + 2, 0); ctx.lineTo(cx - dx + 2, h); ctx.stroke();
+          ctx.strokeStyle = cRight; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(cx + dx, 0); ctx.lineTo(cx - dx, h); ctx.stroke();
+          if (wState.barcode) {
+            ctx.fillStyle = '#050505'; ctx.fillRect(430, 255, 100, 30);
+            ctx.strokeStyle = cRight; ctx.strokeRect(430, 255, 100, 30);
+            ctx.fillStyle = cRight; ctx.font = 'bold 12px "Share Tech Mono"'; ctx.textAlign = 'center'; ctx.fillText('SYNC_RATE', 480, 274);
           }
-
-          // 배지는 항상 중앙에 고정
-          ctx.fillStyle = '#050505'; ctx.fillRect(430, 255, 100, 30);
-          ctx.strokeStyle = themeColor; ctx.strokeRect(430, 255, 100, 30);
-          ctx.fillStyle = themeColor; ctx.font = 'bold 12px "Share Tech Mono"'; ctx.textAlign = 'center';
-          ctx.fillText('SYNC_RATE', 480, 274);
         }
       }
     }
@@ -688,28 +617,23 @@
     function draw(prog = animProgress) {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // 1. 글리치 그리드 배경
       ctx.fillStyle = '#050505'; ctx.fillRect(0, 0, canvas.width, canvas.height);
       ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)'; ctx.lineWidth = 1;
       for (let x = 0; x < canvas.width; x += 40) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke(); }
       for (let y = 0; y < canvas.height; y += 40) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke(); }
 
-      // 2. 배경 스플릿 및 그라데이션 합성
       drawSplitBackground(prog);
+      ctx.fillStyle = 'rgba(5, 5, 5, 0.4)'; ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // 화면 전체 틴트 (글래스 가독성용)
-      ctx.fillStyle = 'rgba(5, 5, 5, 0.35)'; ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      // 3. 컴포넌트 렌더링
       renderOrder.forEach(key => {
+        if (!wState[key]) return;
         if (key === 'barcode') renderBarcodeLabel(prog);
-        if (key === 'profile1') renderProfile(elements.profile1, name1.value, danger1.value, 'SUBJECT_01', '#10b981');
-        if (key === 'profile2') renderProfile(elements.profile2, name2.value, danger2.value, 'SUBJECT_02', themeColor);
+        if (key === 'profile1') renderProfile(elements.profile1, name1.value, danger1.value, 'SUB_01 [L]', cLeft);
+        if (key === 'profile2') renderProfile(elements.profile2, name2.value, danger2.value, 'SUB_02 [R]', cRight);
         if (key === 'warningBox') renderWarningBox(prog);
         if (key === 'logConsole') renderLogConsole(prog);
       });
 
-      // 드래그 가이드
       if (draggingItem && !isExporting) {
         const it = elements[draggingItem];
         ctx.save(); ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1; ctx.setLineDash([4, 4]);
@@ -717,7 +641,6 @@
       }
     }
 
-    // 바코드
     function renderBarcodeLabel(prog) {
       const it = elements.barcode; ctx.save();
       ctx.fillStyle = '#f8fafc'; ctx.fillRect(it.x, it.y, it.w, it.h);
@@ -729,7 +652,7 @@
       bars.forEach((w, idx) => { if (idx % 2 === 0) ctx.fillRect(curX, it.y + 16, w, 32); curX += w + 2.5; });
 
       const scanY = it.y + 16 + (Math.sin(prog * Math.PI * 2) * 0.5 + 0.5) * 32;
-      ctx.fillStyle = themeColor; ctx.shadowColor = themeColor; ctx.shadowBlur = 10;
+      ctx.fillStyle = cRight; ctx.shadowColor = cRight; ctx.shadowBlur = 10;
       ctx.fillRect(it.x + 12, scanY, it.w - 24, 2); ctx.shadowBlur = 0;
 
       ctx.font = 'bold 12px "Share Tech Mono"'; ctx.textAlign = 'center'; ctx.fillStyle = '#0f172a';
@@ -737,7 +660,6 @@
       ctx.restore();
     }
 
-    // 프로필창 (좌/우 통합)
     function renderProfile(it, rawName, rawDanger, label, color) {
       const name = rawName.trim() || `UNKNOWN`;
       const danger = parseInt(rawDanger) || 0;
@@ -765,7 +687,6 @@
       ctx.restore();
     }
 
-    // 워닝 에러 캡슐
     function renderWarningBox(prog) {
       const it = elements.warningBox;
       const text = quoteText.value.trim() || quoteText.placeholder.replace('예: ', '');
@@ -777,17 +698,14 @@
       ctx.strokeStyle = '#ff0055'; ctx.lineWidth = 2;
       ctx.fillRect(it.x, it.y, it.w, it.h); ctx.strokeRect(it.x, it.y, it.w, it.h);
 
-      if (dopaLogoImg.complete) ctx.drawImage(dopaLogoImg, it.x + 12, it.y + 10, 40, 40);
-
       ctx.fillStyle = isBlink ? '#ffffff' : '#ff0055'; ctx.font = 'bold 14px "Share Tech Mono"'; ctx.textAlign = 'left';
-      ctx.fillText('SYSTEM_WARNING', it.x + 62, it.y + 24);
+      ctx.fillText('! SYSTEM_WARNING', it.x + 16, it.y + 24);
 
-      ctx.fillStyle = '#ffffff'; ctx.font = '500 12px Pretendard';
-      ctx.fillText(text.length > 18 ? text.slice(0, 18) + '...' : text, it.x + 62, it.y + 44);
+      ctx.fillStyle = '#ffffff'; ctx.font = '500 13px Pretendard';
+      ctx.fillText(text.length > 20 ? text.slice(0, 20) + '...' : text, it.x + 16, it.y + 44);
       ctx.restore();
     }
 
-    // 티키타카 콘솔 로그
     function renderLogConsole(prog) {
       const it = elements.logConsole;
       ctx.save();
@@ -796,7 +714,7 @@
       ctx.fillRect(it.x, it.y, it.w, it.h); ctx.strokeRect(it.x, it.y, it.w, it.h);
 
       ctx.fillStyle = '#111111'; ctx.fillRect(it.x, it.y, it.w, 24);
-      ctx.fillStyle = themeColor; ctx.font = 'bold 12px "Share Tech Mono"'; ctx.textAlign = 'left';
+      ctx.fillStyle = cRight; ctx.font = 'bold 12px "Share Tech Mono"'; ctx.textAlign = 'left';
       ctx.fillText('root@dopa-sys:~# tail -f /var/log/mind.log', it.x + 10, it.y + 16);
 
       const total = logEntries.length;
@@ -809,8 +727,8 @@
         
         if (prog >= entryProgStart) {
           let typeColor = '#94a3b8'; let label = '[SYS]';
-          if (log.type === 'left') { typeColor = '#10b981'; label = '[L_USR]'; }
-          if (log.type === 'right') { typeColor = themeColor; label = '[R_USR]'; }
+          if (log.type === 'left') { typeColor = cLeft; label = '[L_USR]'; }
+          if (log.type === 'right') { typeColor = cRight; label = '[R_USR]'; }
           if (log.type === 'err') { typeColor = '#ff0055'; label = '[ERROR]'; }
 
           ctx.font = 'bold 11px "Share Tech Mono"'; ctx.fillStyle = typeColor;
@@ -836,27 +754,23 @@
       });
 
       if (prog >= 0.75 && Math.floor(prog * 20) % 2 === 0) {
-        ctx.fillStyle = themeColor; ctx.fillRect(it.x + 12, currentY, 8, 14);
+        ctx.fillStyle = cRight; ctx.fillRect(it.x + 12, currentY, 8, 14);
       }
       ctx.restore();
     }
 
-    // 7초 루프 엔진
     draw(0);
     function startPreviewLoop() {
       stopPreviewLoop();
       previewTimer = setInterval(() => {
         if (isExporting) return;
-        animProgress = (animProgress + 0.007) % 1;
-        draw(animProgress);
+        animProgress = (animProgress + 0.007) % 1; draw(animProgress);
       }, 50);
     }
-    function stopPreviewLoop() {
-      if (previewTimer) { clearInterval(previewTimer); previewTimer = null; }
-    }
+    function stopPreviewLoop() { if (previewTimer) { clearInterval(previewTimer); previewTimer = null; } }
     startPreviewLoop();
 
-    // ================= 고화질 내보내기 엔진 =================
+    // ================= 고화질 내보내기 =================
     const btnGenerateGIF = document.getElementById('btnGenerateGIF');
     const btnGenerateMP4 = document.getElementById('btnGenerateMP4');
     const loadingStatus = document.getElementById('loadingStatus');
@@ -885,7 +799,7 @@
         loadingStatus.classList.add('hidden');
         if (!obj.error) {
           previewMediaWrapper.innerHTML = `<img src="${obj.image}" class="w-full h-full object-cover">`;
-          btnDownload.href = obj.image; btnDownload.download = `dopa_sys_override.gif`;
+          btnDownload.href = obj.image; btnDownload.download = `dopa_override_dual.gif`;
           resultArea.classList.remove('hidden'); resultArea.scrollIntoView({ behavior: 'smooth' });
         }
       });
@@ -900,13 +814,10 @@
       draw(0.0);
       const stream = canvas.captureStream(30);
       let mimeType = 'video/mp4';
-      if (!MediaRecorder.isTypeSupported('video/mp4')) {
-        mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9') ? 'video/webm;codecs=vp9' : 'video/webm';
-      }
+      if (!MediaRecorder.isTypeSupported('video/mp4')) mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9') ? 'video/webm;codecs=vp9' : 'video/webm';
       
       let recorder;
-      try { recorder = new MediaRecorder(stream, { mimeType }); } 
-      catch (e) { recorder = new MediaRecorder(stream); }
+      try { recorder = new MediaRecorder(stream, { mimeType }); } catch (e) { recorder = new MediaRecorder(stream); }
 
       const chunks = [];
       recorder.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data); };
@@ -914,7 +825,7 @@
         const blob = new Blob(chunks, { type: recorder.mimeType || 'video/mp4' });
         const videoUrl = URL.createObjectURL(blob);
         previewMediaWrapper.innerHTML = `<video src="${videoUrl}" autoplay loop muted playsinline class="w-full h-full object-cover"></video>`;
-        btnDownload.href = videoUrl; btnDownload.download = `dopa_sys_override.mp4`;
+        btnDownload.href = videoUrl; btnDownload.download = `dopa_override_dual.mp4`;
         
         isExporting = false; startPreviewLoop();
         btnGenerateGIF.disabled = false; btnGenerateMP4.disabled = false;
@@ -925,8 +836,7 @@
       recorder.start();
       let currentFrame = 0; const totalSteps = 180;
       const stepInterval = setInterval(() => {
-        draw(currentFrame / totalSteps);
-        currentFrame++;
+        draw(currentFrame / totalSteps); currentFrame++;
         progressBar.style.width = `${Math.min(95, Math.round((currentFrame / totalSteps) * 100))}%`;
         statusMsg.textContent = `> COMPILING_VIDEO (${Math.round(currentFrame / 30)}/6s)...`;
         if (currentFrame >= totalSteps) { clearInterval(stepInterval); recorder.stop(); }
@@ -935,7 +845,7 @@
 
     btnShareX.addEventListener('click', () => {
       const url = window.location.href;
-      const text = encodeURIComponent(`[SYSTEM OVERRIDE] 사이버펑크 페어틀 ⚠️\n#도파 #DOPA #페어틀 #사이버펑크 #자캐\n`);
+      const text = encodeURIComponent(`[SYSTEM OVERRIDE] 사이버펑크 듀얼 페어틀 ⚠️\n#도파 #DOPA #페어틀 #사이버펑크 #자캐 #혐관\n`);
       window.open(`https://twitter.com/intent/tweet?text=${text}&url=${encodeURIComponent(url)}`, '_blank');
     });
   </script>
